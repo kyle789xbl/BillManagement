@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bill Manager</title>
     <style>
-	<!-- THIS PROJECT IS COMPLETELY FREE TO USE AND HAS 0 BUGS OR EXPLOITS I PROMISE MONEY CANNOT BE SEEN UNLESS I GO INTO THE DATABASE -->
-
-	
         * {
             margin: 0;
             padding: 0;
@@ -31,12 +28,21 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            width: 100%;
+            overflow-x: hidden;
         }
 
         .header {
             text-align: center;
             margin-bottom: 3rem;
             position: relative;
+            padding-top: 3rem;
+        }
+
+        @media (min-width: 768px) {
+            .header {
+                padding-top: 0;
+            }
         }
 
         .header h1 {
@@ -124,17 +130,30 @@
 
         .sections {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 2rem;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
             margin-bottom: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .sections {
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+                gap: 2rem;
+            }
         }
 
         .section {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 2rem;
+            padding: 1.5rem;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (min-width: 768px) {
+            .section {
+                padding: 2rem;
+            }
         }
 
         .section-header {
@@ -177,13 +196,21 @@
 
         .bill-item {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 0.75rem;
             padding: 1rem;
             border-radius: 12px;
             background: #f9fafb;
             border-left: 4px solid;
             transition: all 0.2s ease;
+        }
+
+        @media (min-width: 640px) {
+            .bill-item {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
         }
 
         .bill-item:hover {
@@ -707,13 +734,25 @@
                 return;
             }
             
+            // Sort by date
+            billsArray.sort((a, b) => {
+                const dateA = a[1].date || '';
+                const dateB = b[1].date || '';
+                
+                // Extract numbers from date strings (e.g., "1st" -> 1, "25th" -> 25)
+                const numA = parseInt(dateA.match(/\d+/) || '999');
+                const numB = parseInt(dateB.match(/\d+/) || '999');
+                
+                return numA - numB;
+            });
+            
             container.innerHTML = billsArray.map(([key, bill]) => `
                 <div class="bill-item" style="border-left-color: ${bill.color}">
                     <div class="bill-info">
                         <div class="bill-name">${bill.name}</div>
                         ${bill.date ? `<div class="bill-date">${bill.date}</div>` : ''}
                     </div>
-                    <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%;">
                         <div class="bill-amount" style="color: ${bill.color}">£${bill.amount.toFixed(2)}</div>
                         <div class="bill-actions">
                             <button class="btn-small btn-edit" onclick="editBill('${section}', '${key}')">Edit</button>
