@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            padding: 1rem;
+            color: #333;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 2rem;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        @media (min-width: 768px) {
+            .header h1 {
+                font-size: 3rem;
+            }
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 0.8rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (min-width: 768px) {
+            .logout-btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card .amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .card.earnings .amount { color: #10b981; }
+        .card.constant .amount { color: #ef4444; }
+        .card.extra .amount { color: #f59e0b; }
+        .card.remaining .amount { color: #3b82f6; }
+
+        .sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .add-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .bill-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .bill-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 12px;
+            background: #f9fafb;
+            border-left: 4px solid;
+            transition: all 0.2s ease;
+        }
+
+        .bill-item:hover {
+            background: #f3f4f6;
+            transform: translateX(5px);
+        }
+
+        .bill-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .bill-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .bill-date {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .bill-amount {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .bill-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-small:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #333;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #333;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #9ca3af;
+        }
+
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+            font-size: 2rem;
+        }
+
+        .app-content {
+            display: none;
+        }
+
+        .app-content.active {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.5rem;
+            padding: 2rem;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 0.75rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">Loading...</div>
+
+    <div class="login-container" id="loginContainer" style="display: none;">
+        <div class="login-box">
+            <h2>💰 Bill Manager</h2>
+            <div id="errorMessage"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Sign In</button>
+                <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="switchToSignup()">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="app-content" id="appContent">
+        <div class="container">
+            <div class="header">
+                <button class="logout-btn" onclick="logout()">Logout</button>
+                <h1>💰 Bill Manager</h1>
+            </div>
+
+            <div class="summary-cards">
+                <div class="card earnings">
+                    <h3>Earnings</h3>
+                    <div class="amount" id="totalEarnings">£0.00</div>
+                </div>
+                <div class="card constant">
+                    <h3>Constant Bills</h3>
+                    <div class="amount" id="totalConstant">£0.00</div>
+                </div>
+                <div class="card extra">
+                    <h3>Extra Bills</h3>
+                    <div class="amount" id="totalExtra">£0.00</div>
+                </div>
+                <div class="card remaining">
+                    <h3>Remaining</h3>
+                    <div class="amount" id="totalRemaining">£0.00</div>
+                </div>
+            </div>
+
+            <div class="sections">
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Start of Month</h2>
+                        <button class="add-btn" onclick="openModal('start')">+ Add Bill</button>
+                    </div>
+                    <div class="bill-list" id="startList"></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2>End of Month</h2>
+                        <button class="add-btn" onclick="openModal('end')">+ Add Bill</button>
+                    </div>
+                    <div class="bill-list" id="endList"></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Earnings</h2>
+                        <button class="add-btn" onclick="openModal('earnings')">+ Add Income</button>
+                    </div>
+                    <div class="bill-list" id="earningsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2 class="modal-header" id="modalTitle">Add Bill</h2>
+            <form id="billForm">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="billName" required>
+                </div>
+                <div class="form-group">
+                    <label>Amount (£)</label>
+                    <input type="number" id="billAmount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="text" id="billDate" placeholder="e.g., 1st, 15th, 25th">
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <div class="color-picker" id="colorPicker"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getDatabase, ref, set, onValue, push, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAPntMjvcRGmQuOPFEyqa_oVJhtJ4UlmAU",
+            authDomain: "card-grading-wales.firebaseapp.com",
+            databaseURL: "https://card-grading-wales-default-rtdb.firebaseio.com",
+            projectId: "card-grading-wales",
+            storageBucket: "card-grading-wales.firebasestorage.app",
+            messagingSenderId: "667954571603",
+            appId: "1:667954571603:web:42ae9953dacff998f019a6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        const colors = [
+            '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', 
+            '#ef4444', '#14b8a6', '#f97316', '#6366f1', '#84cc16'
+        ];
+
+        let bills = {
+            start: {},
+            end: {},
+            earnings: {}
+        };
+
+        let currentSection = '';
+        let editingKey = null;
+        let currentUser = null;
+        let isSignupMode = false;
+
+        window.switchToSignup = function() {
+            isSignupMode = !isSignupMode;
+            const button = document.querySelector('.btn-secondary');
+            const submitButton = document.querySelector('#loginForm .btn-primary');
+            if (isSignupMode) {
+                button.textContent = 'Back to Sign In';
+                submitButton.textContent = 'Create Account';
+                document.querySelector('.login-box h2').textContent = '📝 Create Account';
+            } else {
+                button.textContent = 'Create Account';
+                submitButton.textContent = 'Sign In';
+                document.querySelector('.login-box h2').textContent = '💰 Bill Manager';
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            document.getElementById('loading').style.display = 'none';
+            
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('appContent').classList.add('active');
+                initApp();
+            } else {
+                document.getElementById('loginContainer').style.display = 'flex';
+                document.getElementById('appContent').classList.remove('active');
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('errorMessage');
+
+            try {
+                if (isSignupMode) {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+                errorDiv.innerHTML = '';
+            } catch (error) {
+                errorDiv.innerHTML = `<div class="error-message">${error.message}</div>`;
+            }
+        });
+
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        };
+
+        function initApp() {
+            renderColorPicker();
+            setupRealtimeListeners();
+        }
+
+        function setupRealtimeListeners() {
+            const sections = ['start', 'end', 'earnings'];
+            
+            sections.forEach(section => {
+                const billsRef = ref(database, `users/${currentUser.uid}/bills/${section}`);
+                onValue(billsRef, (snapshot) => {
+                    bills[section] = snapshot.val() || {};
+                    renderBills(section, section === 'start' ? 'startList' : section === 'end' ? 'endList' : 'earningsList');
+                    updateSummary();
+                });
+            });
+        }
+
+        function renderColorPicker() {
+            const picker = document.getElementById('colorPicker');
+            picker.innerHTML = colors.map((color, i) => 
+                `<div class="color-option" style="background: ${color}" onclick="selectColor(${i})"></div>`
+            ).join('');
+        }
+
+        window.selectColor = function(index) {
+            document.querySelectorAll('.color-option').forEach((el, i) => {
+                el.classList.toggle('selected', i === index);
+            });
+        };
+
+        window.openModal = function(section) {
+            currentSection = section;
+            editingKey = null;
+            document.getElementById('modal').classList.add('active');
+            document.getElementById('modalTitle').textContent = 
+                section === 'earnings' ? 'Add Income' : 'Add Bill';
+            document.getElementById('billForm').reset();
+            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
+            document.querySelector('.color-option').classList.add('selected');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('modal').classList.remove('active');
+        };
+
+        window.editBill = function(section, key) {
+            const bill = bills[section][key];
+            currentSection = section;
+            editingKey = key;
+            
+            document.getElementById('billName').value = bill.name;
+            document.getElementById('billAmount').value = bill.amount;
+            document.getElementById('billDate').value = bill.date || '';
+            
+            const colorIndex = colors.indexOf(bill.color);
+            if (colorIndex !== -1) selectColor(colorIndex);
+            
+            document.getElementById('modal').classList.add('active');
+            document.getElementById('modalTitle').textContent = 'Edit Bill';
+        };
+
+        window.deleteBill = async function(section, key) {
+            if (confirm('Are you sure you want to delete this bill?')) {
+                const billRef = ref(database, `users/${currentUser.uid}/bills/${section}/${key}`);
+                await remove(billRef);
+            }
+        };
+
+        document.getElementById('billForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('billName').value;
+            const amount = parseFloat(document.getElementById('billAmount').value);
+            const date = document.getElementById('billDate').value;
+            const selectedColor = document.querySelector('.color-option.selected');
+            const color = selectedColor ? selectedColor.style.background : colors[0];
+            
+            const bill = { name, amount, date, color };
+            
+            if (editingKey) {
+                const billRef = ref(database, `users/${currentUser.uid}/bills/${currentSection}/${editingKey}`);
+                await set(billRef, bill);
+            } else {
+                const billsRef = ref(database, `users/${currentUser.uid}/bills/${currentSection}`);
+                await push(billsRef, bill);
+            }
+            
+            closeModal();
+        });
+
+        function renderBills(section, containerId) {
+            const container = document.getElementById(containerId);
+            const sectionBills = bills[section];
+            const billsArray = Object.entries(sectionBills);
+            
+            if (billsArray.length === 0) {
+                container.innerHTML = '<div class="empty-state">No bills added yet</div>';
+                return;
+            }
+            
+            container.innerHTML = billsArray.map(([key, bill]) => `
+                <div class="bill-item" style="border-left-color: ${bill.color}">
+                    <div class="bill-info">
+                        <div class="bill-name">${bill.name}</div>
+                        ${bill.date ? `<div class="bill-date">${bill.date}</div>` : ''}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="bill-amount" style="color: ${bill.color}">£${bill.amount.toFixed(2)}</div>
+                        <div class="bill-actions">
+                            <button class="btn-small btn-edit" onclick="editBill('${section}', '${key}')">Edit</button>
+                            <button class="btn-small btn-delete" onclick="deleteBill('${section}', '${key}')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateSummary() {
+            const totalEarnings = Object.values(bills.earnings).reduce((sum, bill) => sum + (bill.amount || 0), 0);
+            const totalConstant = Object.values(bills.start).reduce((sum, bill) => sum + (bill.amount || 0), 0);
+            const totalExtra = Object.values(bills.end).reduce((sum, bill) => sum + (bill.amount || 0), 0);
+            const totalRemaining = totalEarnings - totalConstant - totalExtra;
+            
+            document.getElementById('totalEarnings').textContent = `£${totalEarnings.toFixed(2)}`;
+            document.getElementById('totalConstant').textContent = `£${totalConstant.toFixed(2)}`;
+            document.getElementById('totalExtra').textContent = `£${totalExtra.toFixed(2)}`;
+            document.getElementById('totalRemaining').textContent = `£${totalRemaining.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
